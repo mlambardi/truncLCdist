@@ -1,0 +1,2 @@
+exportPattern("^(rtruncLC|truncLCdistoptions)$")
+importFrom("stats", "dbinom", "dgeom", "dnbinom", "dpois", "pbinom", "pgeom", "pnbinom", "ppois", "rbinom", "rexp", "runif", "dgamma", "dnorm", "pgamma", "pnorm")

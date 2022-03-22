@@ -1,0 +1,27 @@
+Package: truncLCdist
+Type: Package
+Title: An Improved Random Number Generator For Some Truncated Distributions
+Version: 0.1.0
+Authors@R: c(person(given = c("Euloge", "Clovis"), family = c("Kenne Pagui"), role = "aut", email = "kenne@stat.unipd.it", comment = c(ORCID = "0000-0002-8998-9251")), person(given = "Michele", family = "Lambardi di San Miniato", role = c("aut", "cre"), email = "michele.lambardi@uniud.it", comment = c(ORCID = "0000-0003-2423-4250")))
+URL: https://github.com/ikosmidis/brglm2
+BugReports: https://github.com/mlambardi/truncLCdist/issues
+Description: This package implements random number generation for some famous probability distributions.
+    It includes the exponential families (inverse Gaussian, Gaussian, Poisson, binomial, gamma) and other log-concave distributions, which can be sampled à-la Devroye.
+    This package is intended as an improvement to the pre-existing package "truncdist", especially when it comes to tail distributions, wherein it seems prone to instability.
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+Config/testthat/edition: 3
+RoxygenNote: 7.1.1
+Imports:
+    actuar,
+    Rdpack,
+    Rmpfr,
+    truncdist,
+    futile.options
+RdMacros: Rdpack
+VignetteBuilder: knitr
+License: GPL (>= 3)

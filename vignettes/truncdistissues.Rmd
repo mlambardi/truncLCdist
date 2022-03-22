@@ -1,0 +1,52 @@
+---
+title: "Issues with truncdist"
+author: "Euloge Clovis Kenne Pagui and Michele Lambardi di San Miniato"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{truncdist: troubles in paradise}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+options(rmarkdown.html_vignette.check_title = FALSE)
+require(truncdist)
+require(truncLCdist)
+```
+
+The R package truncdist is a Swiss knife for dealing with truncated distributions. The reason for its generality is that it uses inverse tranform sampling, which is a viable option whenever the quantile function is tractable.
+
+The problem with this approach is that it suffers in the tails of a distribution. For instance, a normal distribution truncated between $a=0$ and $b=\infty$ can be sampled this way:
+
+```{r}
+n <- 10000
+a <- 0
+b <- +Inf
+set.seed(1234)
+summary(rtrunc(n, "norm", a=a, b=b))
+```
+
+But what if we are interested in more extreme tails? Say, $a=8$.
+
+```{r}
+a <- 8
+set.seed(1234)
+summary(rtrunc(n, "norm", a=a, b=b))
+```
+
+Actually, performing inverse transform sampling manually will exhibit the same issues:
+
+```{r}
+set.seed(1234)
+summary(qnorm(pnorm(a)+(1-pnorm(a))*runif(n)))
+```
+
+This because truncdist just looks up for quantile functions based on names and uses them blindly.
+
+Whenever one needs to simulate extreme events, for weather sciences, or value-at-risk assessments, one has to rely on simulations and the reliability of software is crucial.
+
+This is why an enhanced version of truncdist has been developed that both reimplements its rtrunc routine and provides ways to check whether it is safe to trust the software.

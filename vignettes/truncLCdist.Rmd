@@ -1,0 +1,87 @@
+---
+title: "Trying truncLCdist"
+author: "Euloge Clovis Kenne Pagui and Michele Lambardi di San Miniato"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{truncLCdist bettering truncdist}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+options(rmarkdown.html_vignette.check_title = FALSE)
+require(truncdist)
+require(truncLCdist)
+```
+
+The package truncdist is prone to numerical instabilities and badnesses that truncLCdist can partly solve. While being more reliable wherein it reimplements sampling, it also provides ways to assess the safety of its own samples.
+
+Let's see some Poisson data. The base distribution will $\lambda=1$. Now we truncate it so that it generates only numbers in $]a,b]$ with, say, $a=20$ and $b=\infty$.
+
+(Why including $b$ but excluding $a$ from the interval? Well, no matter how sound this sounds, it is a convention that can be found rather broadly, and truncdist adopts it, so do we.)
+
+```{r}
+n <- 100000
+l <- 1
+a <- 17
+summary(rtrunc(n, "pois", a=a, lambda=l))
+summary(rtruncLC(n, "pois", a=a, lambda=l))
+```
+
+See, truncdist is prone to yielding infinite values. This because it evaluates quantile functions at probabilities close to one. But this is very wrong conceptually, because truncation makes all log-concave distributions (excepted the geometric one) more concentrated towards $a$ or $b$.
+
+The alternative truncLCdist instead uses density/distribution functions and cumulative distribution functions, log-transformed in order to deal better with tails.
+
+See binomials:
+
+```{r}
+N <- 1000
+p <- 0.5
+a <- round(N*p + 6*sqrt(N*p*(1-p)))
+print(a)
+summary(rtrunc(n, "binom", a=a, size=N, prob=p))
+summary(rtruncLC(n, "binom", a=a, size=N, prob=p))
+```
+
+See, while not yielding infinite values, rtrunc can return values that are exactly equal to the size parameter, just because that's the upper bound to the binomial's support, but such a large value will occur only with probability equal to
+
+```{r}
+1-(1-exp(N*log(1-p) - pbinom(a, size=N, prob=p, lower.tail = F, log=T)))^n
+```
+
+See, we had to use log probabilities to avoid spurious 1s and 0s. The package truncdist, since using quantile functions, is in no way exempt from numerical instabilities.
+
+Another thing that one may notice: samples should be strictly greater than $a$, yet there are some $a$ values in truncdist's samples. We can imagine that quantile functions when evaluated at values close to unity will misbehave somehow.
+
+Let's see some "normal" data,
+
+```{r}
+a <- 7
+summary(rtrunc(n, "norm", a=a))
+summary(rtruncLC(n, "norm", a=a))
+```
+
+Again, as one switches to more extreme tails, truncdist will more likely provide corrupt samples.
+
+Let's see a set of truncation thresholds with gamma:
+
+```{r}
+n <- 10000
+thr <- 1:100
+finiteness <- sapply(thr, function(a) tryCatch(
+  mean(is.finite(rtrunc(n, "gamma", a=a, shape=1))),
+  error=function(e) 0
+))
+plot(x=thr, y=finiteness, type="l", col="black")
+finiteness2 <- sapply(thr, function(a) tryCatch(
+  mean(is.finite(rtruncLC(n, "gamma", a=a, shape=1))),
+  error=function(e) 0
+))
+lines(x=thr, y=finiteness2, col="red")
+```
+
+It doesn't mean that truncLCdist is safe. It is only sa**fer**, that is, safe to a broader extent. At some point, truncLCdist will provide bad samples too. At least it should not yield samples that are at the tails of support.

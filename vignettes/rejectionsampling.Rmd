@@ -1,0 +1,55 @@
+---
+title: "Rejection sampling"
+author: "Euloge Clovis Kenne Pagui and Michele Lambardi di San Miniato"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{rejection sampling at work}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+options(rmarkdown.html_vignette.check_title = FALSE)
+require(truncdist)
+require(truncLCdist)
+```
+
+The R package truncdist uses inverse transform sampling to simulate distributions: it feeds uniform-distributed random numbers to a quantile function.
+
+Instead, truncLCdist uses Devroye's method, which is a special case of rejection sampling. This means that, in order to simulate a distribution $f(x)$, one simulates from a simpler distribution $g(x)$, such that $f(x) < k\cdot g(x)$ for some constant $k$. A sample $x$ from $g(x)$ is accepted with probability $p(x)=\frac{f(x)}{k \cdot g(x)}$, otherwise it is redrawn. Ultimately, the samples will be distributed according to $f(x)$.
+
+The game is finding an efficient $g(x)$ with low $k$. Devroye proposed a uniform-exponential mixture in the continuous case and a uniform-geometric mixture in the discrete case that has $k < 1/4$ or $k < 1/5$, respectively. This method applies to log-concave distributions. Even when truncating, if the set of values to be retained is an interval, delimited by $a$ and $b$, the resulting distribution remains log-concave, so the same method applies, and so the same bounds over acceptance rates. Other rejection sampling methods seldom scale as well.
+
+As a part of a debugging-favorable coding, the rtruncLC function returns the empirical acceptance rate as an attribute.
+
+```{r}
+attr(rtruncLC(10000, "norm", a=7), "acc")
+```
+
+See, the acceptance rate is expected to be at least $1/4$ in the continuous case, so this is a rather borderline situation, but it won't be worse than that, while bad behavior is not bounded as easily with other sampling strategies.
+
+```{r}
+attr(rtruncLC(10000, "pois", a=16, lambda=1), "acc")
+```
+
+The minimum acceptance rate is only greater than $1/5$ in the discrete case.
+
+See, as soon as you truncate a bit more, you'll see something weird again:
+
+```{r}
+attr(rtruncLC(10000, "pois", a=17, lambda=1), "acc")
+y <- rtruncLC(10000, "pois", a=175, lambda=1)
+attr(y, "acc")
+```
+
+This is rather borderline. Let's see what happens next:
+
+```{r}
+tryCatch(rtruncLC(10000, "pois", a=1000, lambda=1), error=print)
+```
+
+So, at some point our code will break up too, but at least it will happen later than with truncdist.

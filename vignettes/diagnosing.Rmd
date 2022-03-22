@@ -1,0 +1,111 @@
+---
+title: "Diagnostics"
+author: "Euloge Clovis Kenne Pagui and Michele Lambardi di San Miniato"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{sampling diagnostics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+options(rmarkdown.html_vignette.check_title = FALSE)
+require(truncdist)
+require(truncLCdist)
+```
+
+With base, non-truncated, distributions, the available RNG libraries can be expected to be reasonably safe. With truncated distributions, some additional bit of care is required. This is easily noticed in using R package truncdist.
+
+The function rtruncLC from truncLCdist returns a vector of random variates, with the addition of few attributes which contain some useful diagnostic information. Our package also makes few decisions in dealing with problematic situations, and these decisions are also described in the output in the form of attributes.
+
+See for instance these Poisson random variates:
+
+```{r}
+set.seed(1234)
+out <- rtruncLC(10, "pois", a=10, lambda=1)
+print(out)
+```
+
+Attributes are accessed as typical in R with attributes(), which returns all of them as a list:
+
+```{r}
+attributes(out)
+```
+
+Each attribute can be accessed via attr(), like:
+
+```{r}
+attr(out, "acc")
+```
+
+Even few samples can be problematic, it mostly has to do with how accurately a distribution is described by its cumulative distribution/probability mass/probability density functions (truncdist relies instead on quantile functions).
+
+See for instance an extreme truncation:
+
+```{r}
+out1 <- rtruncLC(10, "pois", lambda=1, a=100)
+print(out1)
+```
+
+At this point the truncdist implementation would normally fail:
+
+```{r}
+tryCatch(rtrunc(10, "pois", lambda=1, a=100), error=print)
+```
+
+So, how could one trust truncLCdist's in this setting?
+
+# Acceptance rate
+
+Devroye's method is employed in truncLCdist, which is a rejection sampling algorithm with acceptance rate granted to be $>20\%$ (in the discrete case, $>25\%$ in the continuous case). But these are mathematical bounds, while the actual bounds can fail in the presence of numeric errors.
+
+In the previous example, the empirical acceptance rate was
+```{r}
+attr(out1, "acc")
+```
+
+```{r, echo=F}
+acc1 <- attr(out1, "acc")
+```
+
+Typically, with only few random variates, the empirical rate can easily fall below the theoretical rate, but as more random variates are generated the bound will be more reflected in practice, after the law of large numbers.
+
+See for instance a more extreme case:
+
+```{r}
+out2 <- rtruncLC(10, "pois", a=1000, lambda=1)
+print(out2)
+```
+
+```{r, echo=F}
+acc2 <- attr(out2, "acc")
+```
+
+In this case, the some other 10 random variates required many more iterations, with acceptance as low as `r signif(acc2*100,2)`$\%$. In these case, even drawing many more samples, acceptance does not reach the theoretical bound, due to **numeric errors**.
+
+See for instance:
+
+```{r}
+attr(rtruncLC(10000, "pois", a=1000, lambda=1), "acc")
+```
+
+With more samples, the acceptance can drop even further, because truncLCdist makes a number of attempts per variate that bounds the global output's probability of label any sample as failed. So, the more the variates, the higher the maximum number of iterations.
+
+# Imputation
+
+As a last resort, after the maximum number of iterations has been reached, the variates still missing are imputed equal to the mode. This is a sound choice in the case of log-concave distributions. The fraction of variates that have been imputed is
+
+```{r}
+attr(out1, "imput")
+attr(out2, "imput")
+```
+
+The former is an ok situation, were no variate has been imputed. The latter is not ok. Much like truncdist, truncLCdist will always reach a stop and output data, though the latter does so much more consistently, while at times truncdist simply ends with exception.
+
+As a matter of concern, truncdist is inconsistent when returning infinite values as log-concave distributions' variates. A log-concave distribution becomes **more concentrated**, *not more dispersed*, as truncation becomes more extreme. This is not the case instead with, for instance, Cauchy density (not log-concave), whose tail distribution almost limits to a uniform distribution over a right- or left- open interval.
+
+With log-concave densities, the probability of extreme values away from the mode decays exponentially with distance, so returning infinite-valued variates is meaningless.

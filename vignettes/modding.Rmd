@@ -1,0 +1,96 @@
+---
+title: "Modding, extending"
+author: "Euloge Clovis Kenne Pagui and Michele Lambardi di San Miniato"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{modding the package: add/modify distributions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+options(rmarkdown.html_vignette.check_title = FALSE)
+require(truncdist)
+require(truncLCdist)
+```
+
+The demand for more or better-implemented model support is far beyound the author's reach. This is why the package is intended to be modded freely, so that one can add distributions or re-implement the existing ones. This is allowed for by means of the truncLCdistoptions() function. We strongly suggest this structure to be adopted by those packages which are meant to be expanded/customized by users.
+
+Let's see how to implement a custom distribution. It must be log-concave, for Devroye sampling.
+
+We implement the Laplace distribution, with density
+$$f(x) = \frac{1}{2\sigma}\exp\left(-\frac{|x-\mu|}{\sigma}\right)\,,\quad x,\mu \in \mathrm{R} \,,\quad \sigma>0\,.$$
+This is seen to be log-concave, so it is ok for our package.
+
+One must first choose a name for the distribution which shall be used for referencing within the package. We call it "laplace", the lowercase intended only for simplicity.
+
+```{r}
+tryCatch({
+  rtruncLC(10, "laplace")
+  print("supported")
+}, error=function(e) "not supported")
+```
+
+This tells us that the name is free for the taking.
+
+First of all, we shall tell whether Laplace is continuous or discrete: it's continuous, so,
+```{r}
+truncLCdistoptions(laplace.continuous=T)
+tryCatch({
+  rtruncLC(10, "laplace")
+}, error=function(e) print(e))
+```
+
+We must specify parameters and how the mode is computed depending on them. With Laplace, parameters are $\mu$ and $\sigma$, the former is also the mode, so
+```{r}
+truncLCdistoptions(laplace.m=function(mu=0, sigma=1) mu)
+tryCatch({
+  rtruncLC(10, "laplace")
+}, error=function(e) print(e))
+```
+
+Well, we must specify the density. It must allow for its logarithm to be evaluated via the log=T option.
+
+```{r}
+truncLCdistoptions(
+  laplace.d=function(x, mu=0, sigma=1, log=F) {
+    y <- -abs((x-mu)/sigma) - log(2*sigma)
+    if (log) y else exp(y)
+  }
+)
+tryCatch({
+  rtruncLC(10, "laplace")
+}, error=function(e) print(e))
+```
+
+Now we have to specify the cumulative distribution function. It must allow for option log.p=T.
+
+```{r}
+truncLCdistoptions(
+  laplace.p=function(x, mu=0, sigma=1, log.p=F) {
+    y <- ifelse(
+      x<mu,
+      exp(-abs((x-mu)/sigma))/2,
+      1 - exp(-abs((x-mu)/sigma))/2
+    )
+    if (log.p) log(y) else y
+  }
+)
+plot(ecdf(rtruncLC(10000, "laplace")))
+curve(truncLCdistoptions("laplace.p")(x), add=T, col="red", lty=2)
+```
+
+Now, we can even truncate the distribution:
+
+```{r}
+plot(ecdf(rtruncLC(10000, "laplace", a=0)))
+curve(pexp(x), add=T, col="red", lty=2)
+```
+
+(a positive-values-only Laplace is actually an exponential distribution)
+
+But this was BAD way to code the CDF. See the vignette "betteryourlog".

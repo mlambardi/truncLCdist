@@ -1,0 +1,86 @@
+---
+title: "Care about your logarithms"
+author: "Euloge Clovis Kenne Pagui and Michele Lambardi di San Miniato"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{numerically sound definitions for distributions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+options(rmarkdown.html_vignette.check_title = FALSE)
+require(truncdist)
+require(truncLCdist)
+```
+
+A a part of defining probability mass/dnesity and cumulative distribution functions, you'll often have to use exponentials and logarithms, and this is a potential source of instability. While $\log(\exp(x))$ is equivalent to $x$, they are not numerically the same.
+
+We rapidly implement the Laplace distribution, with density
+$$f(x) = \frac{1}{2\sigma}\exp\left(-\frac{|x-\mu|}{\sigma}\right) \,.$$
+We do this by modding the package, see vignette "modding":
+
+```{r}
+truncLCdistoptions(
+  laplace.continuous=T,
+  laplace.m=function(mu=0, sigma=1) mu,
+  laplace.d=function(x, mu=0, sigma=1, log=F) {
+    y <- -abs((x-mu)/sigma) - log(2*sigma)
+    if (log) y else exp(y)
+  }
+)
+```
+
+But what about the cumulative distribution function:
+$$F(x) = \frac{\exp\left(-\frac{|x-\mu|}{\sigma}\right)}{2} \text{ if } x < \mu \text{, otherwise } 1 - \frac{\exp\left(-\frac{|x-\mu|}{\sigma}\right)}{2}$$
+
+One may implement it as:
+
+```{r}
+plaplace1 <- function(x, mu=0, sigma=1, log.p=F) {
+  y <- exp(-abs((x-mu)/sigma))/2
+  y <- ifelse(x < mu, y, 1 - y)
+  if (log.p) log(y) else y
+}
+```
+
+But you see, you don't want to first compute the exponential and then the log, the latter being actually used in the package.
+
+The problem is even more relevant in the evaluation of the function
+$$\mathrm{log1mexp}(x) = \log(1-\exp(-x)) \,,\quad x > 0 \,.$$
+The \texttt{R} package \texttt{Rmpfr} implements it in a computing-aware fashion, which is worth consideration.
+
+```{r}
+plaplace2 <- function(x, mu=0, sigma=1, log.p=F) {
+  y <- abs((x-mu)/sigma) + log(2) # >= log(2) > 0
+  y <- ifelse(x < mu, -y, Rmpfr::log1mexp(y))
+  if (log.p) y else exp(y)
+}
+```
+
+The two versions seem the same:
+
+```{r}
+curve(plaplace1(x), from=-3, to=+3)
+curve(plaplace2(x), add=T, col="red", lty=2)
+```
+
+But they will behave very differently under truncation.
+
+```{r}
+a <- 100
+truncLCdistoptions(laplace.p=plaplace2)
+set.seed(1234)
+plot(ecdf(rtruncLC(100000, "laplace", a=a)))
+curve(pexp(x-a), add=T, col="red", lty=2)
+```
+
+Try with
+```{r, eval=F}
+truncLCdistoptions(laplace.p=plaplace1)
+```
+You'll see it hardly works.
