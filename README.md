@@ -9,6 +9,12 @@ There exists several `R` packages aimed at simulating truncated distributions, b
 * `F(x)=P(X≤x)` cumulative distribution function, with its logarithmic version `F(x, log.p=T)=log F(x)`
 * `m=arg max f(x)` mode of the distribution
 
+## Prerequisites
+In GNU/Linux, system libraries `gmp` (GNU Multiple Precision arithmetic library) and `mpfr` (GNU Multiple Precision Floating-point Reliable library) might be required. In future versions of this package, perhaps they won't be required anymore. Fow now, if not installed, you can install via the system console:
+```
+sudo apt install libgmp-dev libmpfr-dev
+```
+
 ## Installation
 In the `R` console, load the `devtools` library via
 ```
