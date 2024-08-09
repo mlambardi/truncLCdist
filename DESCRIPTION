@@ -1,7 +1,7 @@
 Package: truncLCdist
 Type: Package
 Title: An Improved Random Number Generator For Some Truncated Distributions
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: c(person(given = c("Euloge", "Clovis"), family = c("Kenne Pagui"), role = "aut", email = "kenne@stat.unipd.it", comment = c(ORCID = "0000-0002-8998-9251")), person(given = "Michele", family = "Lambardi di San Miniato", role = c("aut", "cre"), email = "michele.lambardi@uniud.it", comment = c(ORCID = "0000-0003-2423-4250")))
 URL: https://github.com/mlambardi/truncLCdist
 BugReports: https://github.com/mlambardi/truncLCdist/issues

@@ -54,9 +54,9 @@ truncLCdistoptions <- futile.options::OptionsManager(
     gamma.exception.raise=function(shape, rate = 1, scale = 1/rate, a=-Inf, b=+Inf) {
       any(shape < 1)
     },
-    gamma.exception.handle=function(n, shape, rate = 1, scale = 1/rate, a=-Inf, b=+Inf) {
+    gamma.exception.handle=function(n, shape, rate = 1, scale = 1/rate, a=-Inf, b=+Inf, maxit=NULL) {
       a <- pmax(a, 0)
-      out <- rtruncLC(n=n, spec="epd", beta=1/shape, a=(a/scale)^shape, b=(b/scale)^shape)
+      out <- rtruncLC(n=n, spec="epd", beta=1/shape, a=(a/scale)^shape, b=(b/scale)^shape, maxit=maxit)
       aux <- attributes(out)
       out <- scale*out^(1/shape)
       attributes(out) <- aux
@@ -73,7 +73,15 @@ truncLCdistoptions <- futile.options::OptionsManager(
     gamma.d=Rmpfr::dgamma,
     gamma.p=pgamma,
     gamma.q=qgamma,
-    gamma.dld=function(x, shape, rate = 1, scale = 1/rate) (shape - 1)/x - lambda,
+    gamma.dld=function(x, shape, rate = 1, scale = 1/rate) (shape - 1)/x - rate,
+
+    # exponential
+    exp.continuous=T,
+    exp.m=function(rate = 1) 0,
+    exp.d=dexp,
+    exp.p=pexp,
+    exp.q=qexp,
+    exp.dld=function(x, rate=1) -rate,
 
     # normal
     norm.continuous=T,
@@ -81,7 +89,7 @@ truncLCdistoptions <- futile.options::OptionsManager(
     norm.d=Rmpfr::dnorm,
     norm.p=Rmpfr::pnorm,
     norm.q=qnorm,
-    norm.dld=function(x, mean = 0, sd = 1) (mu - x)/sigma^2,
+    norm.dld=function(x, mean = 0, sd = 1) (mean - x)/sd^2,
 
     # inverse-Gaussian
     invgauss.continuous=T,
@@ -89,7 +97,7 @@ truncLCdistoptions <- futile.options::OptionsManager(
     invgauss.d=actuar::dinvgauss,
     invgauss.p=actuar::pinvgauss,
     invgauss.q=actuar::qinvgauss,
-    invgauss.dld=function(x, mean, shape = 1, dispersion = 1/shape) -1.5/x - 0.5/mu^2/dispersion + 0.5/dispersion/x^2,
+    invgauss.dld=function(x, mean, shape = 1, dispersion = 1/shape) -1.5/x - 0.5/mean^2/dispersion + 0.5/dispersion/x^2,
 
     # exponential power distribution
     epd.continuous=T,

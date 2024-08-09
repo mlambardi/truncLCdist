@@ -18,6 +18,7 @@
 #' @param b a numeric value for the upper bound of the random variable
 #' @param ... other arguments are are passed to the corresponding distribution-related functions
 #' @param its boolean, whether classical quantile-based sampling à-la truncdist should be performed. Default is FALSE, so Devroye sampling is used instead.
+#' @param maxit integer, maximum number of iterations before imputation
 #' @return A vector with one or more random deviates. An attribute reports on acceptance rates.
 #' @details
 #' This function returns a vector of size n, irrespective of parameters supplied.
@@ -32,7 +33,7 @@
 #' @examples
 #' rtruncLC(10000, "pois", a=15, lambda=1)
 #' rtruncLC(10000, "binom", a=50, size=100, prob=0.15)
-rtruncLC <- function(n, spec, a=-Inf, b=Inf, ..., its=F) {
+rtruncLC <- function(n, spec, a=-Inf, b=Inf, ..., maxit=NULL, its=F) {
   if (any(a > b)) {
     stop("argument a must be less-than-or-equal-to b")
   }
@@ -42,7 +43,7 @@ rtruncLC <- function(n, spec, a=-Inf, b=Inf, ..., its=F) {
   if (!is.null(e <- truncLCdistoptions(paste0(spec, ".exception.raise")))) {
     if (e(a=a, b=b, ...)) {
       e <- truncLCdistoptions(paste0(spec, ".exception.handle"))
-      return(e(n=n, a=a, b=b, ...))
+      return(e(n=n, a=a, b=b, ..., maxit=maxit))
     }
   }
   cont <- truncLCdistoptions(paste0(spec, ".continuous"))
@@ -50,9 +51,9 @@ rtruncLC <- function(n, spec, a=-Inf, b=Inf, ..., its=F) {
     stop(paste0(spec, " not found. Start by setting up ", spec, ".continuous=F or T in options"))
   } else {
     if (cont) { # continuous
-      rtruncLCcontinuous(n, spec, a, b, ...)
+      rtruncLCcontinuous(n, spec, a, b, ..., maxit=maxit)
     } else { # discrete
-      rtruncLCdiscrete(n, spec, floor(a), floor(b), ...)
+      rtruncLCdiscrete(n, spec, floor(a), floor(b), ..., maxit=maxit)
     }
   }
 }

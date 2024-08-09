@@ -4,7 +4,7 @@
 \alias{rtruncLC}
 \title{Generate truncated random deviates}
 \usage{
-rtruncLC(n, spec, a = -Inf, b = Inf, ..., its = F)
+rtruncLC(n, spec, a = -Inf, b = Inf, ..., maxit = NULL, its = F)
 }
 \arguments{
 \item{n}{a positive integer for the number of random deviates generated}
@@ -25,6 +25,8 @@ rtruncLC(n, spec, a = -Inf, b = Inf, ..., its = F)
 \item{b}{a numeric value for the upper bound of the random variable}
 
 \item{...}{other arguments are are passed to the corresponding distribution-related functions}
+
+\item{maxit}{integer, maximum number of iterations before imputation}
 
 \item{its}{boolean, whether classical quantile-based sampling à-la truncdist should be performed. Default is FALSE, so Devroye sampling is used instead.}
 }
