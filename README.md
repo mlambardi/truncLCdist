@@ -5,8 +5,9 @@ This package implements an acceptance-rejection algorithm for sampling from a lo
 
 There exist several `R` packages aimed at simulating truncated distributions, but often they are targeted at only few distributions. The package `truncLCdist` implements support for Tweedie distributions, like normal, binomial, Poisson, negative binomial, geometric, exponential, gamma, inverse-Gaussian. The user can add other distributions, provided they are **log-concave**. In fact, one can simulate any such distribution via Devroye's method (1986, 1987), just by providing:
 
-* `f(x)` probability mass/density function, with its logarithmic version `f(x, log=T)=log f(x)`
-* `F(x)=P(X≤x)` cumulative distribution function, with its logarithmic version `F(x, log.p=T)=log F(x)`
+* `f(x)` probability mass/density function (PMF/PDF), with its logarithmic version `f(x, log=T)=log f(x)`
+* `F(x)=P(X≤x)` cumulative distribution function (CDF), with its logarithmic version `F(x, log.p=T)=log F(x)`
+* `d log f(x)` derivative of the logarithm of the PDF, which helps when the CDF fails
 * `m=arg max f(x)` mode of the distribution
 
 ## Installation
@@ -63,16 +64,20 @@ Built-in support for few distributions and parameter definitions:
 * `"norm"`: normal, indexed by `mean` (real) and `sd` (positive)
 * `"invgauss"`: inverse-Gaussian, indexed by `mean` (positive) and `shape` or `dispersion` (positive)
 
-The binomial distribution was implemented by means of the command
+The Gaussian distribution was implemented by means of the command
 ```
 truncLCdist::truncLCdistoptions(
-  nbinom.continuous=F, ## is it a continuous distribution?
-  nbinom.m=function(size, prob) pmax(floor((size - 1)*(1 - prob)/prob), 0), ## the mode of the distribution
-  nbinom.d=Rmpfr::dnbinom, ## the probability mass/density function
-  nbinom.p=pnbinom ## the cumulative distribution function
-  )
+  norm.continuous=T,
+  norm.m=function(mean = 0, sd = 1) mean,
+  norm.d=Rmpfr::dnorm,
+  norm.p=Rmpfr::pnorm,
+  norm.q=qnorm,
+  norm.dld=function(x, mean = 0, sd = 1) (mean - x)/sd^2
+)
 ```
-Custom distributions can be added by providing the required `.continuous`, `.m`, `.d` and `.p` functions.
+Custom distributions can be added by providing the required `.continuous`, `.m`, `.d`, `.p`, `.q` functions.
+
+With continuous distributions, it is recommended to add also a `.dld` function for `d log f(x)`.
 
 * The `.d` function requires a logarithmic version that activates with the option `log=T`.
 * The `.p` function requires a logarithmic version that activates with the option `log.p=T`.
