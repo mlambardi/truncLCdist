@@ -1,5 +1,5 @@
 
-rtruncLCdiscrete <- function(n, spec, a = -Inf, b = +Inf, ...) {
+rtruncLCdiscrete <- function(n, spec, a = -Inf, b = +Inf, maxit=NULL, ...) {
   auxmode <- truncLCdistoptions(paste0(spec, ".m"))
   if (is.null(auxmode)) stop("mode unspecified")
   ld <- truncLCdistoptions(paste0(spec, ".d"))
@@ -23,7 +23,7 @@ rtruncLCdiscrete <- function(n, spec, a = -Inf, b = +Inf, ...) {
   acc <- 0
   j <- 0
   # 20% is lower bound on acceptance rate in discrete case
-  maxit <- Rmpfr::log1mexp(truncLCdistoptions("early.stopping.prob")/n)/log(1 - 0.2)
+  if (is.null(maxit)) maxit <- Rmpfr::log1mexp(truncLCdistoptions("early.stopping.prob")/n)/log(1 - 0.2)
   while ((N <- length(i)) & j < maxit) {
     acc <- acc + N
     U <- runif(N)
