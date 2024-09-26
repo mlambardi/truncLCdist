@@ -90,4 +90,4 @@ With continuous distributions, it is recommended to add also a `.dld` function f
 
 Also see our working paper for the rationale:
 
-* Lambardi di San Miniato, M., Kenne-Pagui, E.C. (2022) *Scalable random number generation for truncated log-concave distributions*. arXiv preprints. https://doi.org/10.48550/arXiv.2204.01364
+* Lambardi di San Miniato, M., Kenne-Pagui, E.C. (2024) *Reliable simulation of extremely-truncated log-concave distributions*. Journal of Statistical Computation and Simulation, 1--24. https://doi.org/10.1080/00949655.2024.2406954
