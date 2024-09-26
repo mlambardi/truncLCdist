@@ -1,12 +1,14 @@
 year <- sub("-.*", "", meta$Date)
 note <- sprintf("R package version %s", meta$Version)
 bibentry(
-  bibtype = "Misc",
-  title = "Scalable random number generation for truncated log-concave distributions",
-  author = c(
-    person("Michele", "Lambardi di San Miniato"),
-    person("Euloge Clovis", "Kenne Pagui")
-  ),
-  year = "2022",
-  doi           = "10.48550/arXiv.2204.01364",
-  )
+    bibtype = "Article",
+    title = "Reliable simulation of extremely-truncated log-concave distributions",
+    author = c(
+        person("Michele", "Lambardi di San Miniato"),
+        person("Euloge Clovis", "Kenne Pagui")
+    ),
+    pages = "1--24",
+    year = "2024",
+    journal = "Journal of Statistical Computation and Simulation",
+    doi = "10.1080/00949655.2024.2406954"
+)
