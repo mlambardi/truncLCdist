@@ -88,6 +88,6 @@ With continuous distributions, it is recommended to add also a `.dld` function f
 * Devroye, L. (1986) *Non-Uniform Random Variate Generation*. Springer-Verlag, New York. https://doi.org/10.1007/978-1-4613-8643-8
 * Devroye, L. (1987) *A simple generator for discrete log-concave distributions*. Computing **39**, 87--91. https://doi.org/10.1007/BF02307716
 
-Also see our working paper for the rationale:
+Also see our published article for the rationale:
 
 * Lambardi di San Miniato, M., Kenne-Pagui, E.C. (2024) *Reliable simulation of extremely-truncated log-concave distributions*. Journal of Statistical Computation and Simulation, 1--24. https://doi.org/10.1080/00949655.2024.2406954
