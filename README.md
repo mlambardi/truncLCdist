@@ -12,36 +12,7 @@ There exist several `R` packages aimed at simulating truncated distributions, bu
 
 ## Installation
 
-It is possible to install `truncLCdist` via `devtools`, but there are few prerequisites depending on the operating system.
-
-* **GNU/Linux**: The current version of `truncLCdist` requires two system libraries:
-  * `gmp`, GNU Multiple Precision arithmetic library
-  * `mpfr`, GNU Multiple Precision Floating-point Reliable library
-  
-  In future versions of this package, perhaps `gmp` and `mpfr` won't be required anymore. Fow now, if not installed, you can install them via the system console. On Ubuntu:
-  ```
-  sudo apt-get install libgmp-dev libmpfr-dev
-  ```
-  Tested on Ubuntu 22.04, `R 4.2`.
-
-* **Windows**: The `R` package `devtools` works best if the `Rtools` utility is installed first. You can download `Rtools` from: https://cran.r-project.org/bin/windows/Rtools/, then install it manually. Alternatively, `RStudio` automatically proposes and carries out the installation of `Rtools` when a `C++`/`python`/`R markdown` file is opened.
-
-  Tested on a Windows 11 virtual machine (`R 4.2`), see https://developer.microsoft.com/it-it/windows/downloads/virtual-machines/.
-
-* **Mac OS X**: No additional library seems needed for installation on Mac OS X.
-
-  Tested on Mac OS X Sierra, `R 4.2`.
-
-After fixing these dependencies, you can install `devtools`, if missing, via the `R` console:
-```
-install.packages("devtools")
-```
-and then install `truncLCdist` via
-```
-devtools::install_github("mlambardi/truncLCdist")
-```
-
-Other `R`-only dependencies are installed automatically on some operating systems. If it fails, they can be installed manually via `install.packages()`, since they are available on `CRAN`.
+See [the wiki](../../wiki/Installation) for installation instructions.
 
 ## Usage
 
@@ -63,25 +34,6 @@ Built-in support for few distributions and parameter definitions:
 * `"gamma"`: gamma, indexed by `shape` (positive) and `rate` or `scale` (both positive)
 * `"norm"`: normal, indexed by `mean` (real) and `sd` (positive)
 * `"invgauss"`: inverse-Gaussian, indexed by `mean` (positive) and `shape` or `dispersion` (positive)
-
-The Gaussian distribution was implemented by means of the command
-```
-truncLCdist::truncLCdistoptions(
-  norm.continuous=T,
-  norm.m=function(mean = 0, sd = 1) mean,
-  norm.d=Rmpfr::dnorm,
-  norm.p=Rmpfr::pnorm,
-  norm.q=qnorm,
-  norm.dld=function(x, mean = 0, sd = 1) (mean - x)/sd^2
-)
-```
-Custom distributions can be added by providing the required `.continuous`, `.m`, `.d`, `.p`, `.q` functions.
-
-With continuous distributions, it is recommended to add also a `.dld` function for `d log f(x)`.
-
-* The `.d` function requires a logarithmic version that activates with the option `log=T`.
-* The `.p` function requires a logarithmic version that activates with the option `log.p=T`.
-* All the functions must be parameterized consistently.
 
 ## References
 
